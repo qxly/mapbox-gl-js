@@ -122,7 +122,7 @@ Every expression evaluates to a value of one of the following types.
 ###Lookup:
 - `["get", obj: Object, key: String ] -> Value`
 - `["has", obj: Object, key: String ] -> Boolean`
-- `["at", arr: Array<T>|Vector<T>, index: Number] -> T`
+- `["at", arr: Array<T, N>|Vector<T>, index: Number] -> T`
 - `["typeof", expr: Value] -> String`
 - `["length", e: Vector<T>|String] -> Number`
 
