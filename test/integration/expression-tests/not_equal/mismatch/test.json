@@ -1,0 +1,36 @@
+{
+  "expression": [
+    "!=",
+    [
+      "string",
+      [
+        "get",
+        [
+          "properties"
+        ],
+        "x"
+      ]
+    ],
+    [
+      "number",
+      [
+        "get",
+        [
+          "properties"
+        ],
+        "y"
+      ]
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": ".2",
+          "error": "Expected string but found number instead."
+        }
+      ]
+    }
+  }
+}

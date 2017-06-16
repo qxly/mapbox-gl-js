@@ -1,0 +1,19 @@
+<style>
+    body { font-family: Helvetica; }
+    h2 a { color:white; text-decoration:none; }
+</style>
+<table>
+<tr>
+    <th>Actual</th>
+    <th>Info</th>
+</tr>
+<% for (r of results) { %>
+<tr>
+    <td><%- r.expression %></td>
+    <td>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json"><%- r.group %>/<%- r.test %></a></h2>
+        <pre><%- r.difference %></pre>
+    </td>
+</tr>
+<% } %>
+</table>

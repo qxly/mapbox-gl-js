@@ -1,0 +1,94 @@
+{
+  "expression": [
+    "boolean",
+    [
+      "get",
+      [
+        "properties"
+      ],
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": ""
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "false"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 0
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": null
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "evaluateResults": [
+      {
+        "error": "ExpressionEvaluationError: Property x not found in object with keys: []"
+      },
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  }
+}

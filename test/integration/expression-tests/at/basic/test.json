@@ -1,0 +1,44 @@
+{
+  "expression": [
+    "number",
+    [
+      "at",
+      [
+        "json_array",
+        [
+          "get",
+          [
+            "properties"
+          ],
+          "arr"
+        ]
+      ],
+      1
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "arr": [
+            9,
+            8,
+            7
+          ]
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "evaluateResults": [
+      8
+    ]
+  }
+}

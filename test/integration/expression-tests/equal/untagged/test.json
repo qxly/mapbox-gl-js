@@ -1,0 +1,33 @@
+{
+  "expression": [
+    "==",
+    [
+      "string",
+      [
+        "get",
+        [
+          "properties"
+        ],
+        "x"
+      ]
+    ],
+    [
+      "get",
+      [
+        "properties"
+      ],
+      "y"
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": ".2",
+          "error": "Expected string but found Variant<null | number | string | boolean | color | object | Vector<(recursive_wrapper)>> instead."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "expression": [
+    "+",
+    2,
+    3
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "evaluateResults": [
+      5
+    ]
+  }
+}

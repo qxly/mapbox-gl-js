@@ -1,0 +1,40 @@
+{
+  "expression": [
+    "number",
+    [
+      "get",
+      [
+        "properties"
+      ],
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "evaluateResults": [
+      {
+        "error": "ExpressionEvaluationError: Property x not found in object with keys: []"
+      },
+      1
+    ]
+  }
+}
