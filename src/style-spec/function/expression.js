@@ -10,7 +10,7 @@ const {
     NumberType,
     StringType,
     BooleanType,
-    // ColorType,
+    ColorType,
     ObjectType,
     ValueType,
     typename,
@@ -152,6 +152,11 @@ const expressions: { [string]: Definition } = module.exports.expressions = {
         type: lambda(ObjectType, ValueType),
         compile: fromContext('asObject')
     },
+    'color': {
+        name: 'color',
+        type: lambda(ColorType, StringType),
+        compile: fromContext('color')
+    },
     'get': {
         name: 'get',
         type: lambda(ValueType, ObjectType, StringType),
@@ -174,12 +179,7 @@ const expressions: { [string]: Definition } = module.exports.expressions = {
     'typeof': {
         name: 'typeof',
         type: lambda(StringType, ValueType),
-        compile: (_, args) => ({
-            js: `
-            Array.isArray(${args[0].js}) ? 'Vector<Value>' :
-            ${args[0].js} === null ? 'Null' :
-            this.titlecase(typeof ${args[0].js})`
-        })
+        compile: fromContext('typeOf')
     },
     'length': {
         name: 'length',
@@ -266,6 +266,16 @@ const expressions: { [string]: Definition } = module.exports.expressions = {
         name: 'concat',
         type: lambda(StringType, nargs(ValueType)),
         compile: (_, args) => ({js: `[${args.map(a => a.js).join(', ')}].join('')`})
+    },
+    'rgb': {
+        name: 'rgb',
+        type: lambda(ColorType, NumberType, NumberType, NumberType),
+        compile: fromContext('rgba')
+    },
+    'rgba': {
+        name: 'rgb',
+        type: lambda(ColorType, NumberType, NumberType, NumberType, NumberType),
+        compile: fromContext('rgba')
     },
     'case': {
         name: 'case',
