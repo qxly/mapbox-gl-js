@@ -55,6 +55,12 @@ exports.run = function (implementation, options, runExpressionTest) {
 
             const expected = fixture.expected;
 
+            let compiledJs;
+            if (result.compileResult.js) {
+                compiledJs = result.compileResult.js;
+                delete result.compileResult.js;
+            }
+
             const compileOk = deepEqual(result.compileResult, expected.compileResult);
             const evalOk = compileOk && deepEqual(result.evaluateResults, expected.evaluateResults);
             params.ok = compileOk && evalOk;
@@ -88,6 +94,7 @@ exports.run = function (implementation, options, runExpressionTest) {
             if (msg) { console.log(msg); }
 
             params.expression = JSON.stringify(fixture.expression, null, 2);
+            params.compiledJs = compiledJs;
 
             done();
         } catch (e) {
