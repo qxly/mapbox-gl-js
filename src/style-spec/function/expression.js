@@ -333,39 +333,25 @@ const expressions: { [string]: Definition } = module.exports.expressions = {
 
             if (stops.length === 1) return {js: `${outputs[0]}`};
 
-            if (interpolation.name === 'step') {
-                throw new Error('TODO: implement "step" interpolation');
-            }
+            const interpolationOptions: Object = {
+                name: interpolation.name
+            };
 
-            let base;
             if (interpolation.name === 'exponential') {
                 const baseExpr = interpolation.arguments[0];
                 if (!baseExpr.literal || typeof baseExpr.value !== 'number') {
                     return {errors: ["Exponential interpolation base must be a literal number value."]};
                 }
-                base = baseExpr.value;
-            } else if (interpolation.name === 'linear') {
-                base = 1;
-            } else {
-                // already enforced by type checking
-                throw new Error(`Unknown interpolation type ${interpolation.name}`);
+                interpolationOptions.base = baseExpr.value;
             }
 
             // TODO: investigate how this code is optimized in V8
             return {js: `
             (function () {
                 var input = ${args[1].js};
-
                 var stopInputs = [${stops.join(', ')}];
                 var stopOutputs = [${outputs.join(', ')}];
-
-                if (input <= stopInputs[0]) return stopOutputs[0]();
-                if (input >= stopInputs[${stops.length - 1}]) return stopOutputs[${stops.length - 1}]();
-
-                var index = this.findStopLessThanOrEqualTo(stopInputs, input);
-                var t = this.interpolationFactor(input, ${base}, stopInputs[index], stopInputs[index + 1]);
-
-                return this.interpolate['${resultType}'](stopOutputs[index](), stopOutputs[index + 1](), t);
+                return this.evaluateCurve(${args[1].js}, stopInputs, stopOutputs, ${JSON.stringify(interpolationOptions)}, ${JSON.stringify(resultType)});
             }.bind(this))()`};
         }
     },
