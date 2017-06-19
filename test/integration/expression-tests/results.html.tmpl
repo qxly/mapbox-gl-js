@@ -4,14 +4,15 @@
 </style>
 <table>
 <tr>
-    <th>Actual</th>
-    <th>Info</th>
+    <th>Expression</th>
+    <th>Results</th>
 </tr>
 <% for (r of results) { %>
 <tr>
-    <td><%- r.expression %></td>
+    <td><pre><%- r.expression %></pre></td>
     <td>
         <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json"><%- r.group %>/<%- r.test %></a></h2>
+        <pre><%- r.compiledJs %></pre>
         <pre><%- r.difference %></pre>
     </td>
 </tr>
