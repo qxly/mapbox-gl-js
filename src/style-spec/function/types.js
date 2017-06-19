@@ -43,14 +43,14 @@ function vector(itemType: Type) /*: VectorType */ {
     };
 }
 
-// function array(itemType, N) /*: ArrayType */ {
-//     return {
-//         kind: 'array',
-//         name: `Array<${itemType.name}>`,
-//         itemType,
-//         N
-//     };
-// }
+function array(itemType: Type, N: number) /*: ArrayType */ {
+    return {
+        kind: 'array',
+        name: `Array<${itemType.name}, ${N}>`,
+        itemType,
+        N
+    };
+}
 
 // Used to match an argument that must be an array of some (unspecified)
 // length.
@@ -96,6 +96,8 @@ const ValueType = variant(
     (Value: Type) => vector(Value)
 );
 
+const InterpolationType = primitive('interpolation_type');
+
 module.exports = {
     NullType,
     NumberType,
@@ -104,9 +106,11 @@ module.exports = {
     ColorType,
     ObjectType,
     ValueType,
+    InterpolationType,
     typename,
     variant,
     vector,
+    array,
     anyArray,
     lambda,
     nargs

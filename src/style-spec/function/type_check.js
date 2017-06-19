@@ -9,7 +9,7 @@
      key: string
  }
 
- export type ExpressionName = "literal" | "ln2" | "pi" | "e" | "string" | "number" | "boolean" | "json_array" | "object" | "get" | "has" | "at" | "typeof" | "length" | "zoom" | "properties" | "geometry_type" | "id" | "case" | "match" | "is_error" | "==" | "!=" | ">" | ">=" | "<=" | "<" | "&&" | "||" | "!" | "curve" | "step" | "exponential" | "linear" | "cubic-bezier" | "+" | "-" | "*" | "/" | "%" | "^" | "log10" | "ln" | "log2" | "sin" | "cos" | "tan" | "asin" | "acos" | "atan" | "ceil" | "floor" | "round" | "abs" | "min" | "max" | "concat" | "upcase" | "downcase" | "rgb" | "rgba" | "color"
+ export type ExpressionName = "literal" | "ln2" | "pi" | "e" | "string" | "number" | "boolean" | "json_array" | "object" | "get" | "has" | "at" | "typeof" | "length" | "zoom" | "properties" | "geometry_type" | "id" | "case" | "match" | "is_error" | "==" | "!=" | ">" | ">=" | "<=" | "<" | "&&" | "||" | "!" | "curve" | "step" | "exponential" | "linear" | "cubic-bezier" | "+" | "-" | "*" | "/" | "%" | "^" | "log10" | "ln" | "log2" | "sin" | "cos" | "tan" | "asin" | "acos" | "atan" | "ceil" | "floor" | "round" | "abs" | "min" | "max" | "concat" | "upcase" | "downcase" | "rgb" | "rgba" | "color" | "color_to_array"
 
  export type TypedLambdaExpression = {|
      literal: false,

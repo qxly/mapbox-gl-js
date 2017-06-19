@@ -13,9 +13,11 @@ const {
     ColorType,
     ObjectType,
     ValueType,
+    InterpolationType,
     typename,
     variant,
     vector,
+    array,
     anyArray,
     lambda,
     nargs
@@ -40,6 +42,7 @@ const evaluationContext = require('./evaluation_context');
      type: Type,
      isFeatureConstant: boolean,
      isZoomConstant: boolean,
+     expression: TypedExpression,
      function?: any
  |}
 
@@ -51,7 +54,7 @@ const evaluationContext = require('./evaluation_context');
  type Definition = {
      name: ExpressionName,
      type: Type,
-     compile: (expr: TypedExpression, args: Array<CompiledExpression>) => ({ js: string, errors?: Array<string>, isFeatureConstant?: boolean, isZoomConstant?: boolean })
+     compile: (expr: TypedExpression, args: Array<CompiledExpression>) => ({ js?: string, errors?: Array<string>, isFeatureConstant?: boolean, isZoomConstant?: boolean })
  }
  */
 
@@ -108,14 +111,6 @@ function defineBooleanOp(op) {
     };
 }
 
-// function functionWrapper(body) {
-//     return (_, args) => {
-//         const argnames = args.map((a, i) => `a${i}`).join(', ');
-//         const argvalues = args.map(a => a.js).join(', ');
-//         return { js: `(function (${argnames}) { ${body} })(${argvalues});` };
-//     };
-// }
-
 function fromContext(name) {
     return (_, args) => {
         const argvalues = args.map(a => a.js).join(', ');
@@ -156,6 +151,11 @@ const expressions: { [string]: Definition } = module.exports.expressions = {
         name: 'color',
         type: lambda(ColorType, StringType),
         compile: fromContext('color')
+    },
+    'color_to_array': {
+        name: 'color_to_array',
+        type: lambda(array(NumberType, 4), ColorType),
+        compile: (_, args) => ({js: `${args[0].js}.value`})
     },
     'get': {
         name: 'get',
@@ -291,6 +291,98 @@ const expressions: { [string]: Definition } = module.exports.expressions = {
             result.push(args[0].js);
             return { js: result.join(':') };
         }
+    },
+    'curve': {
+        name: 'curve',
+        type: lambda(typename('T'), InterpolationType, NumberType, nargs(NumberType, typename('T'))),
+        compile: (_, args) => {
+            const interpolation = args[0].expression;
+            if (interpolation.literal) { throw new Error('Invalid interpolation type'); } // enforced by type checking
+
+            let resultType;
+            if (args[3].type === NumberType) {
+                resultType = 'number';
+            } else if (args[3].type === ColorType) {
+                resultType = 'color';
+            } else {
+                return {
+                    errors: [`Type ${args[3].type.name} is not interpolatable, and thus cannot be used as a curve's output type.`]
+                };
+            }
+
+            const stops = [];
+            const outputs = [];
+            for (let i = 2; (i + 1) < args.length; i += 2) {
+                const input = args[i].expression;
+                const output = args[i + 1];
+                if (!input.literal || typeof input.value !== 'number') {
+                    return {
+                        errors: [ 'Input/output pairs for "curve" expressions must be defined using literal numeric values (not computed expressions) for the input values.' ]
+                    };
+                }
+
+                if (stops.length && stops[stops.length - 1] >= input.value) {
+                    return {
+                        errors: [ 'Input/output pairs for "curve" expressions must be arranged with input values in strictly ascending order.' ]
+                    };
+                }
+
+                stops.push(input.value);
+                outputs.push(`() => ${output.js}`);
+            }
+
+            if (stops.length === 1) return {js: `${outputs[0]}`};
+
+            if (interpolation.name === 'step') {
+                throw new Error('TODO: implement "step" interpolation');
+            }
+
+            let base;
+            if (interpolation.name === 'exponential') {
+                const baseExpr = interpolation.arguments[0];
+                if (!baseExpr.literal || typeof baseExpr.value !== 'number') {
+                    return {errors: ["Exponential interpolation base must be a literal number value."]};
+                }
+                base = baseExpr.value;
+            } else if (interpolation.name === 'linear') {
+                base = 1;
+            } else {
+                // already enforced by type checking
+                throw new Error(`Unknown interpolation type ${interpolation.name}`);
+            }
+
+            // TODO: investigate how this code is optimized in V8
+            return {js: `
+            (function () {
+                var input = ${args[1].js};
+
+                var stopInputs = [${stops.join(', ')}];
+                var stopOutputs = [${outputs.join(', ')}];
+
+                if (input <= stopInputs[0]) return stopOutputs[0]();
+                if (input >= stopInputs[${stops.length - 1}]) return stopOutputs[${stops.length - 1}]();
+
+                var index = this.findStopLessThanOrEqualTo(stopInputs, input);
+                var t = this.interpolationFactor(input, ${base}, stopInputs[index], stopInputs[index + 1]);
+
+                return this.interpolate['${resultType}'](stopOutputs[index](), stopOutputs[index + 1](), t);
+            }.bind(this))()`};
+        }
+    },
+    'step': {
+        name: 'step',
+        type: lambda(InterpolationType),
+        compile: () => ({ js: 'void 0' })
+    },
+    'exponential': {
+        name: 'exponential',
+        type: lambda(InterpolationType, NumberType),
+        compile: () => ({ js: 'void 0' })
+    },
+    'linear': {
+        name: 'step',
+        type: lambda(InterpolationType),
+        compile: () => ({ js: 'void 0' })
     }
 };
 
@@ -322,13 +414,19 @@ function compileExpression(expr: any) {
     const parsed = parseExpression('', expr);
     const compiled = compile(null, parsed);
     if (compiled.result === 'success') {
-        const fn = new Function('mapProperties', 'feature', `
-mapProperties = mapProperties || {};
-feature = feature || {};
-var props = feature.properties || {};
-return (${compiled.js})
-`);
-        compiled.function = fn.bind(evaluationContext());
+        try {
+            const fn = new Function('mapProperties', 'feature', `
+    mapProperties = mapProperties || {};
+    feature = feature || {};
+    var props = feature.properties || {};
+    return (${compiled.js})
+    `);
+            compiled.function = fn.bind(evaluationContext());
+        } catch (e) {
+            // TODO: for debugging purposes; remove this.
+            console.log(compiled.js);
+            throw e;
+        }
     }
 
     return compiled;
@@ -349,7 +447,8 @@ function compile(expected: Type | null, e: TypedExpression) /*: CompiledExpressi
             js: JSON.stringify(e.value),
             type: e.type,
             isFeatureConstant: true,
-            isZoomConstant: true
+            isZoomConstant: true,
+            expression: e
         };
     } else {
         const errors: Array<CompileError> = [];
@@ -389,12 +488,15 @@ function compile(expected: Type | null, e: TypedExpression) /*: CompiledExpressi
             isZoomConstant = isZoomConstant && compiled.isZoomConstant;
         }
 
+        assert(compiled.js);
+
         return {
             result: 'success',
-            js: `(${compiled.js})`,
+            js: `(${compiled.js || 'void 0'})`, // `|| void 0` is to satisfy flow
             type: e.type.result,
             isFeatureConstant,
-            isZoomConstant
+            isZoomConstant,
+            expression: e
         };
     }
 }
